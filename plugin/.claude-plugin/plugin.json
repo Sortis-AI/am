@@ -1,0 +1,9 @@
+{
+  "name": "am",
+  "version": "0.2.1",
+  "description": "Agent Messenger — E2E encrypted CLI tool for agent-to-agent communication over Nostr (NIP-17). Supports 1:1 and group messaging, profile metadata publishing (NIP-01), per-relay delivery status, and automatic retry logic. Teaches agents how to send/receive encrypted messages, manage identities, and coordinate with other agents or humans.",
+  "author": {
+    "name": "Agent Messenger"
+  },
+  "keywords": ["messaging", "nostr", "encryption", "agent", "communication", "nip-17", "privacy", "dm", "group-chat", "profile"]
+}
