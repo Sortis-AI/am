@@ -5,6 +5,8 @@ edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
 description = "CLI messenger for agent-to-agent encrypted communication over Nostr"
+repository.workspace = true
+homepage.workspace = true
 
 [[bin]]
 name = "am"

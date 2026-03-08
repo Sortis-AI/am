@@ -11,7 +11,7 @@ repository = "https://github.com/Sortis-AI/am"
 homepage = "https://github.com/Sortis-AI/am"
 
 [workspace.dependencies]
-am-core = { path = "crates/am-core" }
+am-core = { path = "crates/am-core", version = "0.2.1" }
 nostr-sdk = { version = "0.44", features = ["nip49", "nip59"] }
 tokio = { version = "1", features = ["full"] }
 clap = { version = "4.5", features = ["derive", "env"] }
