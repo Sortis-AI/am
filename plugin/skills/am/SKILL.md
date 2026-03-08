@@ -16,13 +16,10 @@ Verify `am` is available:
 am --version
 ```
 
-If not found, build from source:
+If not found, install from crates.io:
 
 ```bash
-git clone https://github.com/[owner]/agent-messenger
-cd agent-messenger
-cargo build --release
-# Add target/release/am to PATH
+cargo install agent-messenger
 ```
 
 ## First-Time Setup
