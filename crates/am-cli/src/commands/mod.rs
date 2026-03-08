@@ -1,0 +1,92 @@
+pub mod config;
+pub mod identity;
+pub mod listen;
+pub mod profile;
+pub mod relay;
+pub mod send;
+
+use clap::{Parser, Subcommand, ValueEnum};
+
+use am_core::error::AmResult;
+
+#[derive(Debug, Clone, ValueEnum)]
+pub enum OutputFormat {
+    Json,
+    Text,
+}
+
+#[derive(Debug, Parser)]
+#[command(
+    name = "am",
+    about = "Agent messenger — E2E encrypted messaging over Nostr"
+)]
+#[command(version)]
+pub struct Cli {
+    /// Output format
+    #[arg(long, default_value = "json", global = true)]
+    pub format: OutputFormat,
+
+    /// Identity name to use
+    #[arg(long, global = true)]
+    pub identity: Option<String>,
+
+    /// Quiet mode — suppress non-essential output
+    #[arg(short, long, global = true)]
+    pub quiet: bool,
+
+    /// Increase verbosity (-v, -vv, -vvv)
+    #[arg(short, long, action = clap::ArgAction::Count, global = true)]
+    pub verbose: u8,
+
+    /// Passphrase for encrypted key files (NIP-49)
+    #[arg(long, env = "AM_PASSPHRASE", global = true)]
+    pub passphrase: Option<String>,
+
+    #[command(subcommand)]
+    pub command: Commands,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum Commands {
+    /// Manage identities (keypairs)
+    #[command(subcommand)]
+    Identity(identity::IdentityCmd),
+
+    /// Send an encrypted message
+    Send(send::SendArgs),
+
+    /// Listen for incoming messages
+    Listen(listen::ListenArgs),
+
+    /// Manage profile metadata
+    #[command(subcommand)]
+    Profile(profile::ProfileCmd),
+
+    /// Manage relays
+    #[command(subcommand)]
+    Relay(relay::RelayCmd),
+
+    /// Manage configuration
+    #[command(subcommand)]
+    Config(config::ConfigCmd),
+}
+
+pub async fn run(cli: Cli) -> AmResult<()> {
+    let format = match cli.format {
+        OutputFormat::Json => am_core::output::Format::Json,
+        OutputFormat::Text => am_core::output::Format::Text,
+    };
+    let id = cli.identity.as_deref();
+    let passphrase = cli.passphrase.as_deref();
+
+    let verbosity = cli.verbose;
+
+    match cli.command {
+        Commands::Identity(cmd) => identity::run(cmd, passphrase, format).await,
+        Commands::Send(args) => send::run(args, id, passphrase, format, verbosity).await,
+        Commands::Listen(args) => listen::run(args, id, passphrase, format, verbosity).await,
+        Commands::Profile(cmd) => profile::run(cmd, id, passphrase, format, verbosity).await,
+        Commands::Relay(cmd) => relay::run(cmd, format).await,
+        Commands::Config(cmd) => config::run(cmd, format).await,
+    }
+}
