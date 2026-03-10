@@ -1,0 +1,27 @@
+[package]
+name = "am-ingest"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Message ingestion daemon for agent-messenger — collects NIP-17 messages into SQLite"
+repository.workspace = true
+homepage.workspace = true
+
+[[bin]]
+name = "am-ingest"
+path = "src/main.rs"
+
+[dependencies]
+tokio = { workspace = true }
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+rusqlite = { workspace = true }
+sha2 = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+dirs = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3"

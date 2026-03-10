@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/am-core", "crates/am-cli"]
+members = ["crates/am-core", "crates/am-cli", "crates/am-ingest", "crates/am-agent"]
 
 [workspace.package]
 version = "0.2.1"
@@ -23,3 +23,5 @@ dirs = "6"
 tracing = "0.1"
 futures = "0.3"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+rusqlite = { version = "0.38", features = ["bundled"] }
+sha2 = "0.10"

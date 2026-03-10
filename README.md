@@ -63,6 +63,40 @@ JSON by default (for agents). Use `--format text` for human-readable output.
 
 Exit codes: 0=success, 1=general, 2=args, 3=network, 4=crypto, 5=config.
 
+## Agent Harness
+
+For autonomous agents that need to read and respond to messages, `am` provides a two-process harness:
+
+```bash
+# Terminal 1: Ingest messages into SQLite
+am-ingest                          # Runs am listen internally, writes to $XDG_DATA_HOME/am/messages.db
+am-ingest --db ~/msgs.db           # Custom db path
+am-ingest --identity work          # Use specific am identity
+
+# Terminal 2: Process messages with an agent
+am-agent --once                    # Process pending messages and exit
+am-agent                           # Poll loop (default: every 30s)
+am-agent --config agent.toml       # Custom config file
+am-agent --interval 60             # Custom poll interval
+```
+
+**How it works:**
+1. `am-ingest` runs `am listen` as a subprocess, parses NDJSON, and writes messages into SQLite with conversation threading
+2. `am-agent` polls SQLite for unprocessed messages, groups by conversation, invokes a configurable agent CLI with strict context isolation, sends replies via `am send`
+
+**Configuration** (`$XDG_CONFIG_HOME/am/am-agent.toml`):
+```toml
+[agent]
+command = "claude"           # Any CLI that accepts a prompt
+args = ["-p", "{prompt}"]    # {prompt} replaced with assembled context
+# stdin = true               # Pipe prompt via stdin instead
+
+[general]
+interval = 30                # Seconds between poll cycles
+identity = "default"         # am identity for sending replies
+system_prompt = "agent.md"   # Path to system prompt file
+```
+
 ## Project Structure
 
 ```
@@ -80,21 +114,25 @@ agent-messenger/
 │   │       ├── config.rs
 │   │       ├── output.rs
 │   │       └── error.rs
-│   └── am-cli/                    # Binary: thin CLI shell
-│       ├── src/
-│       │   ├── main.rs
-│       │   └── commands/
-│       │       ├── mod.rs
-│       │       ├── identity.rs
-│       │       ├── send.rs
-│       │       ├── listen.rs
-│       │       ├── profile.rs
-│       │       ├── relay.rs
-│       │       └── config.rs
-│       └── tests/                 # Integration tests
-│           ├── identity.rs
-│           ├── relay.rs
-│           └── messaging.rs
+│   ├── am-cli/                    # Binary: thin CLI shell
+│   │   ├── src/
+│   │   │   ├── main.rs
+│   │   │   └── commands/
+│   │   │       ├── mod.rs
+│   │   │       ├── identity.rs
+│   │   │       ├── send.rs
+│   │   │       ├── listen.rs
+│   │   │       ├── profile.rs
+│   │   │       ├── relay.rs
+│   │   │       └── config.rs
+│   │   └── tests/                 # Integration tests
+│   │       ├── identity.rs
+│   │       ├── relay.rs
+│   │       └── messaging.rs
+│   ├── am-ingest/                 # Message ingestion daemon
+│   │   └── src/main.rs
+│   └── am-agent/                  # Agent orchestrator
+│       └── src/main.rs
 ```
 
 ## Development

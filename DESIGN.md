@@ -51,11 +51,16 @@ Human-editable when needed. Typed. Rust-native.
 - Shared client module eliminates connection boilerplate
 
 ### v0.3.0
+- `participants` field in `am listen` output (sorted npubs from rumor p-tags)
+- `am-ingest` daemon — message ingestion into SQLite with conversation threading
+- `am-agent` orchestrator — conversation-isolated agent processing with configurable CLI
+- SQLite message persistence (WAL mode, dedup, conversation metadata)
+
+### v0.4.0
 - Public posts (NIP-01 kind:1 short text notes)
 - Inbox relay publication (kind:10050)
 - File transfer
 - Contact aliases
-- Message persistence
 - Relay health monitoring (builds on per-relay status from v0.2.1)
 - Delivery confirmation
 - Structured logging

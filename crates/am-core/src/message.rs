@@ -23,6 +23,37 @@ pub struct ReceivedMessage {
     pub from: String,
     pub content: String,
     pub timestamp: u64,
+    pub participants: Vec<String>,
+}
+
+/// Extract sorted, deduplicated participant npubs from an unwrapped gift wrap.
+///
+/// For group chats, the rumor contains p-tags for all participants.
+/// For 1:1 DMs, the rumor has only one p-tag (the recipient), so we
+/// construct participants from the sender + our own pubkey.
+fn extract_participants(unwrapped: &UnwrappedGift, our_pk: &PublicKey) -> Vec<String> {
+    let mut participants: Vec<String> = unwrapped
+        .rumor
+        .tags
+        .public_keys()
+        .filter_map(|pk| pk.to_bech32().ok())
+        .collect();
+
+    // Always include the sender
+    let sender_npub = unwrapped.sender.to_bech32().unwrap_or_default();
+    if !participants.contains(&sender_npub) {
+        participants.push(sender_npub);
+    }
+
+    // Always include ourselves
+    let our_npub = our_pk.to_bech32().unwrap_or_default();
+    if !participants.contains(&our_npub) {
+        participants.push(our_npub);
+    }
+
+    participants.sort();
+    participants.dedup();
+    participants
 }
 
 pub async fn send(
@@ -192,11 +223,12 @@ pub async fn listen(
 
     let client = client::connect(keys, &config.relays).await?;
 
+    let our_pk = client
+        .public_key()
+        .await
+        .map_err(|e| AmError::Crypto(e.to_string()))?;
+
     let filter = {
-        let our_pk = client
-            .public_key()
-            .await
-            .map_err(|e| AmError::Crypto(e.to_string()))?;
         let mut f = Filter::new().kind(Kind::GiftWrap).pubkey(our_pk);
         if let Some(ts) = since {
             f = f.since(Timestamp::from(ts));
@@ -216,10 +248,12 @@ pub async fn listen(
         let mut messages = Vec::new();
         for event in events.into_iter() {
             if let Ok(unwrapped) = client.unwrap_gift_wrap(&event).await {
+                let participants = extract_participants(&unwrapped, &our_pk);
                 messages.push(ReceivedMessage {
                     from: unwrapped.sender.to_bech32().unwrap_or_default(),
                     content: unwrapped.rumor.content.clone(),
                     timestamp: unwrapped.rumor.created_at.as_secs(),
+                    participants,
                 });
             }
         }
@@ -237,10 +271,12 @@ pub async fn listen(
                 if let RelayPoolNotification::Event { event, .. } = notification {
                     if event.kind == Kind::GiftWrap {
                         if let Ok(unwrapped) = client.unwrap_gift_wrap(&event).await {
+                            let participants = extract_participants(&unwrapped, &our_pk);
                             let msg = ReceivedMessage {
                                 from: unwrapped.sender.to_bech32().unwrap_or_default(),
                                 content: unwrapped.rumor.content.clone(),
                                 timestamp: unwrapped.rumor.created_at.as_secs(),
+                                participants,
                             };
                             if let Ok(json) = serde_json::to_string(&msg) {
                                 println!("{json}");

@@ -5,6 +5,8 @@
 - **Agent A** — sender, holds keypair, sends NIP-17 gift-wrapped DMs
 - **Agent B** — receiver, holds keypair, subscribes to Kind:1059 (GiftWrap) events
 - **Nostr Relays** — dumb pipes, store/forward encrypted events
+- **am-ingest** — daemon, runs `am listen`, writes messages to SQLite
+- **am-agent** — orchestrator, reads SQLite, invokes agent CLI, sends replies via `am send`
 
 ## Data Flow
 
@@ -31,6 +33,26 @@ Agent A                    Relays              Agent B, Agent C
   |                          | -- event(C) --------------> |
 ```
 
+### Agent Harness Pipeline
+```
+┌─────────────┐     NDJSON      ┌─────────────┐
+│  am listen  │ ──────────────→ │  am-ingest  │
+│  (daemon)   │    (stdout)     │  (daemon)   │
+└─────────────┘                 └──────┬──────┘
+                                       │ INSERT
+                                       ▼
+                                ┌─────────────┐
+                                │   SQLite     │
+                                │  messages.db │
+                                └──────┬──────┘
+                                       │ SELECT unprocessed
+                                       ▼
+                                ┌─────────────┐     am send
+                                │  am-agent   │ ──────────────→ relays
+                                │ (periodic)  │
+                                └─────────────┘
+```
+
 ## Port Map
 
 No network ports. CLI only. Communication is relay-mediated via WebSocket.
@@ -40,7 +62,9 @@ No network ports. CLI only. Communication is relay-mediated via WebSocket.
 | Path | Purpose |
 |------|---------|
 | `$XDG_CONFIG_HOME/am/config.toml` | Relay list, default identity, format pref |
+| `$XDG_CONFIG_HOME/am/am-agent.toml` | Agent orchestrator config (agent CLI, interval, identity) |
 | `$XDG_DATA_HOME/am/identities/<name>.nsec` | Secret keys — `nsec1...` (plaintext) or `ncryptsec1...` (NIP-49 encrypted), 0600 perms |
+| `$XDG_DATA_HOME/am/messages.db` | SQLite message store (WAL mode) — messages + conversations tables |
 
 ## File Layout (project root)
 
@@ -51,6 +75,8 @@ No network ports. CLI only. Communication is relay-mediated via WebSocket.
 | `crates/am-core/` | Library crate |
 | `crates/am-cli/` | Binary crate (`am`) |
 | `crates/am-cli/tests/` | Integration tests (no relay required) |
+| `crates/am-ingest/` | Message ingestion daemon (`am-ingest`) |
+| `crates/am-agent/` | Agent orchestrator (`am-agent`) |
 
 ## Module Dependency
 
@@ -65,4 +91,13 @@ am-cli
         ├── config   (dirs, toml, fs)
         ├── output   (serde_json)
         └── error    (thiserror)
+
+am-ingest  (standalone — no am-core dependency)
+  ├── spawns: am listen (subprocess)
+  └── writes: SQLite messages.db
+
+am-agent   (standalone — no am-core dependency)
+  ├── reads: SQLite messages.db
+  ├── spawns: configurable agent CLI
+  └── spawns: am send (subprocess)
 ```
