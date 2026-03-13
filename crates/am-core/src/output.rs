@@ -26,3 +26,15 @@ pub fn print_json_pretty<T: Serialize>(value: &T) -> Result<(), serde_json::Erro
     println!("{json}");
     Ok(())
 }
+
+pub fn eprint_json<T: Serialize>(value: &T) -> Result<(), serde_json::Error> {
+    let json = serde_json::to_string(value)?;
+    eprintln!("{json}");
+    Ok(())
+}
+
+pub fn eprint_json_pretty<T: Serialize>(value: &T) -> Result<(), serde_json::Error> {
+    let json = serde_json::to_string_pretty(value)?;
+    eprintln!("{json}");
+    Ok(())
+}

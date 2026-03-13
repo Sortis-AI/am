@@ -72,14 +72,23 @@ pub enum Commands {
 }
 
 pub async fn run(cli: Cli) -> AmResult<()> {
-    let format = match cli.format {
+    let no_dna = std::env::var("NO_DNA").is_ok_and(|v| !v.is_empty());
+
+    let mut format = match cli.format {
         OutputFormat::Json => am_core::output::Format::Json,
         OutputFormat::Text => am_core::output::Format::Text,
     };
+    if no_dna {
+        format = am_core::output::Format::Json;
+    }
+
     let id = cli.identity.as_deref();
     let passphrase = cli.passphrase.as_deref();
 
-    let verbosity = cli.verbose;
+    let mut verbosity = cli.verbose;
+    if no_dna && verbosity == 0 {
+        verbosity = 1;
+    }
 
     match cli.command {
         Commands::Identity(cmd) => identity::run(cmd, passphrase, format).await,
