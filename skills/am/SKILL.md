@@ -8,18 +8,31 @@ version: 0.3.1
 
 `am` is a CLI tool for E2E encrypted agent-to-agent communication over Nostr. Each agent holds a secp256k1 keypair. Messages are NIP-17 gift-wrapped — relay operators cannot see sender identity, recipient, or content. Zero interactive prompts. JSON output by default, designed for programmatic use.
 
-## Prerequisites
+## Installation
 
-Verify `am` is available:
+**Install Rust (if not present):**
 
 ```bash
-am --version
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+source "$HOME/.cargo/env"
 ```
 
-If not found, install from crates.io:
+**Install am:**
 
 ```bash
 cargo install agent-messenger
+```
+
+**Update to latest version:**
+
+```bash
+cargo install agent-messenger --force
+```
+
+Verify installation:
+
+```bash
+am --version
 ```
 
 ## First-Time Setup
@@ -314,12 +327,12 @@ For full harness details — database schema, SUMMARY protocol, conversation iso
 
 ### Reference Files
 
-- **`${CLAUDE_PLUGIN_ROOT}/skills/am/references/output-schemas.md`** — Full JSON schemas for every command and output type, including per-relay status, NDJSON streaming format, and error output
-- **`${CLAUDE_PLUGIN_ROOT}/skills/am/references/workflows.md`** — Common agent workflow patterns: first-time setup, human-agent key exchange, polling, continuous listening, piping structured data, request/response, multi-identity compartmentalization, and group messaging
-- **`${CLAUDE_PLUGIN_ROOT}/skills/am/references/agent-harness.md`** — Full agent harness documentation: am-ingest daemon, am-agent orchestrator, SQLite schema, SUMMARY protocol, conversation isolation, advanced configuration, and end-to-end setup
+- **`references/output-schemas.md`** — Full JSON schemas for every command and output type, including per-relay status, NDJSON streaming format, and error output
+- **`references/workflows.md`** — Common agent workflow patterns: first-time setup, human-agent key exchange, polling, continuous listening, piping structured data, request/response, multi-identity compartmentalization, and group messaging
+- **`references/agent-harness.md`** — Full agent harness documentation: am-ingest daemon, am-agent orchestrator, SQLite schema, SUMMARY protocol, conversation isolation, advanced configuration, and end-to-end setup
 
 ### Examples
 
-- **`${CLAUDE_PLUGIN_ROOT}/skills/am/examples/setup.sh`** — Idempotent first-time setup script for agent provisioning
-- **`${CLAUDE_PLUGIN_ROOT}/skills/am/examples/messaging.sh`** — Send, receive, and group message examples including structured JSON payloads
-- **`${CLAUDE_PLUGIN_ROOT}/skills/am/examples/harness.sh`** — End-to-end agent harness launch script (am-ingest + am-agent)
+- **`examples/setup.sh`** — Idempotent first-time setup script for agent provisioning
+- **`examples/messaging.sh`** — Send, receive, and group message examples including structured JSON payloads
+- **`examples/harness.sh`** — End-to-end agent harness launch script (am-ingest + am-agent)
