@@ -4,6 +4,7 @@ pub mod listen;
 pub mod profile;
 pub mod relay;
 pub mod send;
+pub mod skill;
 
 use clap::{Parser, Subcommand, ValueEnum};
 
@@ -69,6 +70,9 @@ pub enum Commands {
     /// Manage configuration
     #[command(subcommand)]
     Config(config::ConfigCmd),
+
+    /// Print instructions for installing the am agent skill
+    Skill,
 }
 
 pub async fn run(cli: Cli) -> AmResult<()> {
@@ -97,5 +101,9 @@ pub async fn run(cli: Cli) -> AmResult<()> {
         Commands::Profile(cmd) => profile::run(cmd, id, passphrase, format, verbosity).await,
         Commands::Relay(cmd) => relay::run(cmd, format).await,
         Commands::Config(cmd) => config::run(cmd, format).await,
+        Commands::Skill => {
+            skill::print_instructions(format);
+            Ok(())
+        }
     }
 }
