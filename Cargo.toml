@@ -3,7 +3,7 @@ resolver = "2"
 members = ["crates/am-core", "crates/am-cli", "crates/am-ingest", "crates/am-agent"]
 
 [workspace.package]
-version = "0.3.1"
+version = "0.3.2"
 edition = "2024"
 license = "GPL-3.0-or-later"
 rust-version = "1.85"
@@ -11,7 +11,7 @@ repository = "https://github.com/Sortis-AI/am"
 homepage = "https://github.com/Sortis-AI/am"
 
 [workspace.dependencies]
-am-core = { path = "crates/am-core", version = "0.3.1" }
+am-core = { path = "crates/am-core", version = "0.3.2" }
 nostr-sdk = { version = "0.44", features = ["nip49", "nip59"] }
 tokio = { version = "1", features = ["full"] }
 clap = { version = "4.5", features = ["derive", "env"] }

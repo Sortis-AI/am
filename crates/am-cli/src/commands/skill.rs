@@ -24,7 +24,7 @@ Clone the repository and point your agent at the skills/ directory:
 
     git clone https://github.com/Sortis-AI/am.git
 
-The skill is at: am/skills/am/SKILL.md
+The skill is at: am/skills/agent-messenger/SKILL.md
 
 ## What the skill covers
 
@@ -40,7 +40,7 @@ pub fn print_instructions(format: Format) {
         Format::Json => {
             let json = serde_json::json!({
                 "repository": REPO,
-                "skill_path": "skills/am/SKILL.md",
+                "skill_path": "skills/agent-messenger/SKILL.md",
                 "install_claude_code": format!("claude mcp add-skill {REPO}"),
                 "install_manual": format!("git clone {REPO}.git"),
                 "instructions": INSTRUCTIONS.trim(),

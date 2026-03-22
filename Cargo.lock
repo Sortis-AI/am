@@ -14,7 +14,7 @@ dependencies = [
 
 [[package]]
 name = "agent-messenger"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "am-core",
  "assert_cmd",
@@ -41,7 +41,7 @@ dependencies = [
 
 [[package]]
 name = "am-agent"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "clap",
  "dirs",
@@ -57,7 +57,7 @@ dependencies = [
 
 [[package]]
 name = "am-core"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "dirs",
  "futures",
@@ -73,7 +73,7 @@ dependencies = [
 
 [[package]]
 name = "am-ingest"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "clap",
  "dirs",
