@@ -125,20 +125,21 @@ Each received message is a single JSON object. Both `--once` (batch) and streami
 
 ```json
 {
-  "from": "npub1...",         // sender bech32 public key
-  "content": "string",        // decrypted message content
-  "timestamp": 1700000000     // Unix timestamp (seconds)
+  "from": "npub1...",                    // sender bech32 public key
+  "content": "string",                   // decrypted message content
+  "timestamp": 1700000000,              // Unix timestamp (seconds)
+  "participants": ["npub1...", "npub1..."] // all conversation participants (sorted, deduplicated)
 }
 ```
 
-Group messages use the same format. The `from` field identifies the sender. Clients determine grouping by the rumor's p-tags (all recipients including sender).
+The `participants` array contains all npubs in the conversation — sender, recipient(s), and self — derived from the NIP-17 rumor p-tags. For 1:1 DMs it has 2 entries; for group messages, 3+. Use it to derive a stable conversation ID (e.g., SHA-256 of sorted participants joined by comma).
 
 ### Parsing streaming output
 
 ```bash
 # Process each message as it arrives
 am listen | while IFS= read -r line; do
-  echo "$line" | jq -r '"[\(.created_at)] from \(.from): \(.content)"'
+  echo "$line" | jq -r '"[\(.timestamp)] from \(.from): \(.content)"'
 done
 
 # Collect batch into a JSON array

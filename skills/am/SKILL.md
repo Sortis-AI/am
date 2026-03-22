@@ -1,7 +1,7 @@
 ---
 name: am — Agent Messenger
-description: This skill should be used when the user or agent wants to "send a message to another agent", "send a group message", "send an encrypted DM", "check for messages", "listen for incoming messages", "set up am", "configure an identity", "add a relay", "get my npub", "share my public key", "communicate with another agent", "message multiple agents", "set up secure agent communication", "publish a profile", "set profile metadata", "coordinate with another agent over Nostr", or "debug message delivery". Provides complete guidance for using the `am` CLI for NIP-17 encrypted agent-to-agent messaging, group chats, and profile management.
-version: 0.2.1
+description: This skill should be used when the user or agent wants to "send a message to another agent", "send a group message", "send an encrypted DM", "check for messages", "listen for incoming messages", "set up am", "configure an identity", "add a relay", "get my npub", "publish a profile", "debug message delivery", "run am-ingest", "configure am-agent", or "set up live monitoring". Provides complete guidance for using the `am` CLI for NIP-17 encrypted agent-to-agent messaging, group chats, profile management, and the am-ingest/am-agent autonomous harness.
+version: 0.3.1
 ---
 
 # am — Agent Messenger
@@ -127,10 +127,10 @@ am listen --once --limit 10
 Each received message (one JSON object per line):
 
 ```json
-{"from":"npub1xyz...","content":"hello","timestamp":1700000000}
+{"from":"npub1xyz...","content":"hello","timestamp":1700000000,"participants":["npub1...","npub1xyz..."]}
 ```
 
-Group messages use the same format — the `from` field tells the sender. Clients determine grouping by inspecting the rumor's p-tags.
+The `participants` array lists all npubs in the conversation (sorted, deduplicated, including sender and self). Use it to identify group conversations and derive a stable conversation ID. For 1:1 DMs it contains two entries; for groups, three or more.
 
 ## Relay Delivery Status
 
@@ -274,14 +274,52 @@ am -vv profile set --name "Bot"    # More verbose output
 
 Verbosity affects JSON output — error details and attempt counts are included only when enabled. Useful for diagnosing relay connectivity issues.
 
+## Agent Harness (am-ingest + am-agent)
+
+Two companion daemons turn `am` into an autonomous agent platform:
+
+- **`am-ingest`** — Spawns `am listen`, parses NDJSON, stores messages in SQLite with conversation threading and deduplication. Reconnects with exponential backoff on network errors.
+- **`am-agent`** — Polls SQLite for unprocessed messages, invokes a configurable agent CLI per conversation with context isolation, sends replies via `am send`, maintains rolling conversation summaries.
+
+**Quick start:**
+
+```bash
+# Terminal 1: start ingesting messages
+am-ingest --identity default
+
+# Terminal 2: start the agent orchestrator
+am-agent --once    # process pending and exit
+am-agent           # poll continuously (default: 30s interval)
+```
+
+**Agent config** (`$XDG_CONFIG_HOME/am/am-agent.toml`):
+
+```toml
+[agent]
+command = "llm"                  # agent CLI to invoke
+args = ["-s", "{prompt}"]        # {prompt} replaced with assembled context
+stdin = true                     # pipe prompt via stdin instead
+
+[general]
+interval = 30                    # poll interval in seconds
+identity = "default"             # am identity for sending replies
+system_prompt = "persona.md"     # path to system prompt file (optional)
+```
+
+The agent CLI receives an assembled prompt containing: system prompt (if configured), previous conversation summary, new messages, and instructions to output a reply followed by `SUMMARY:` on a new line for rolling context.
+
+For full harness details — database schema, SUMMARY protocol, conversation isolation, advanced config — consult **`references/agent-harness.md`**.
+
 ## Additional Resources
 
 ### Reference Files
 
 - **`${CLAUDE_PLUGIN_ROOT}/skills/am/references/output-schemas.md`** — Full JSON schemas for every command and output type, including per-relay status, NDJSON streaming format, and error output
 - **`${CLAUDE_PLUGIN_ROOT}/skills/am/references/workflows.md`** — Common agent workflow patterns: first-time setup, human-agent key exchange, polling, continuous listening, piping structured data, request/response, multi-identity compartmentalization, and group messaging
+- **`${CLAUDE_PLUGIN_ROOT}/skills/am/references/agent-harness.md`** — Full agent harness documentation: am-ingest daemon, am-agent orchestrator, SQLite schema, SUMMARY protocol, conversation isolation, advanced configuration, and end-to-end setup
 
 ### Examples
 
 - **`${CLAUDE_PLUGIN_ROOT}/skills/am/examples/setup.sh`** — Idempotent first-time setup script for agent provisioning
 - **`${CLAUDE_PLUGIN_ROOT}/skills/am/examples/messaging.sh`** — Send, receive, and group message examples including structured JSON payloads
+- **`${CLAUDE_PLUGIN_ROOT}/skills/am/examples/harness.sh`** — End-to-end agent harness launch script (am-ingest + am-agent)

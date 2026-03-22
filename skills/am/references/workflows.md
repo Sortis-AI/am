@@ -74,7 +74,7 @@ NOW=$(date +%s)
 am listen --once --since "$SINCE" | while IFS= read -r msg; do
   FROM=$(echo "$msg" | jq -r '.from')
   CONTENT=$(echo "$msg" | jq -r '.content')
-  TS=$(echo "$msg" | jq -r '.created_at')
+  TS=$(echo "$msg" | jq -r '.timestamp')
 
   echo "[$TS] from $FROM: $CONTENT" >&2
   # Dispatch to handler
@@ -106,8 +106,8 @@ while true; do
     CONTENT=$(echo "$msg" | jq -r '.content')
     handle_message "$FROM" "$CONTENT"
   done
+  EXIT_CODE=${PIPESTATUS[0]}
 
-  EXIT_CODE=$?
   if [ "$EXIT_CODE" -eq 3 ]; then
     echo "Network error — reconnecting in 5s..." >&2
     sleep 5

@@ -46,7 +46,7 @@ count=0
 while IFS= read -r msg; do
   FROM=$(echo "$msg" | jq -r '.from')
   CONTENT=$(echo "$msg" | jq -r '.content')
-  TS=$(echo "$msg" | jq -r '.created_at')
+  TS=$(echo "$msg" | jq -r '.timestamp')
   echo "[$TS] from $FROM: $CONTENT" >&2
   count=$((count + 1))
 done < <(am listen --once --since "$SINCE")
@@ -64,6 +64,6 @@ echo "Waiting for incoming messages..." >&2
 am listen | while IFS= read -r msg; do
   FROM=$(echo "$msg" | jq -r '.from')
   CONTENT=$(echo "$msg" | jq -r '.content')
-  TS=$(echo "$msg" | jq -r '.created_at')
+  TS=$(echo "$msg" | jq -r '.timestamp')
   echo "[$TS] $FROM: $CONTENT"
 done
