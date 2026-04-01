@@ -1,30 +1,30 @@
 use am_core::output::Format;
 
-const REPO: &str = "https://github.com/Sortis-AI/am";
+const REPO: &str = "https://github.com/Sortis-AI/agent-messenger";
 
-const INSTRUCTIONS: &str = r#"# Install the am agent skill
+const INSTRUCTIONS: &str = r#"# Install the agent-messenger skill
 
-The am skill teaches AI agents how to use Agent Messenger for E2E
-encrypted communication over Nostr.
+The agent-messenger skill teaches AI agents how to use Agent Messenger
+for E2E encrypted communication over Nostr.
 
 ## Claude Code
 
 Add to your project's .mcp.json or install globally:
 
-    claude mcp add-skill https://github.com/Sortis-AI/am
+    claude mcp add-skill https://github.com/Sortis-AI/agent-messenger
 
 Or clone and point directly:
 
-    git clone https://github.com/Sortis-AI/am.git
-    claude mcp add-skill ./am
+    git clone https://github.com/Sortis-AI/agent-messenger.git
+    claude mcp add-skill ./agent-messenger
 
 ## Other agents (vercel-labs/skills compatible)
 
 Clone the repository and point your agent at the skills/ directory:
 
-    git clone https://github.com/Sortis-AI/am.git
+    git clone https://github.com/Sortis-AI/agent-messenger.git
 
-The skill is at: am/skills/agent-messenger/SKILL.md
+The skill is at: agent-messenger/skills/agent-messenger/SKILL.md
 
 ## What the skill covers
 
